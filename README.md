@@ -2,8 +2,11 @@
 Simple python video transcriptor
 
 # Libraries needed - install throw pip / pip3
+
 pip install speech_recognition
+
 pip install moviepy
+
 pip install pydub
 
 
