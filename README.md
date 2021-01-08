@@ -1,6 +1,12 @@
 # Video-transcriptor
 Simple python video transcriptor
 
+# Programs required
+
+ffmpeg
+
+python
+
 # Libraries needed - install throw pip / pip3
 
 pip install speech_recognition
