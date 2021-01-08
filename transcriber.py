@@ -91,6 +91,7 @@ for track in tracks:
             text_file = open(name, 'w+')
             text_file.writelines(text)
             text_file.close()
+            print(r_text)
         except:
             #notify error
             print('ERROR')
