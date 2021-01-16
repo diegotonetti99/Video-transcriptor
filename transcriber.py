@@ -9,20 +9,32 @@ SILECE_THRESHOLD = '-30' #value in dB, noises lower than silence_threshold are c
 try:
     import moviepy.editor as mp
 except:
-    os.system('pip3 install moviepy')
-    import moviepy.editor as mp
+    try:
+        os.system('pip3 install moviepy')
+        import moviepy.editor as mp
+    except:
+        os.system('pip install moviepy')
+        import moviepy.editor as mp
 
 try:
     from pydub import AudioSegment
 except:
-    os.system('pip3 install pydub')
-    from pydub import AudioSegment
+    try:
+        os.system('pip3 install pydub')
+        from pydub import AudioSegment
+    except:
+        os.system('pip install pydub')
+        from pydub import AudioSegment
 
 try:
     import speech_recognition as sr
 except:
-    os.system('pip3 install SpeechRecognition')
-    import speech_recognition as sr
+    try:
+        os.system('pip3 install SpeechRecognition')
+        import speech_recognition as sr
+    except:
+        os.system('pip install SpeechRecognition')
+        import speech_recognition as sr
 
 #load mp4 ad extract wav track
 print('Loading video...')
