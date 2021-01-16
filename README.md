@@ -9,7 +9,7 @@ python
 
 # Libraries needed - install throw pip / pip3
 
-pip install speech_recognition
+pip install SpeechRecognition
 
 pip install moviepy
 
