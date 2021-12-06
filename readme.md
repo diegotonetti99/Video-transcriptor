@@ -6,7 +6,7 @@ Make `transcription_app.py` file executabile typing in terminal
 ```shell
 chmod +x transcription_app.py
 ```
-Set up transcripion language in `config.py.` Edit it with a text editor
+Set up transcripion language in `config.py`. Edit it with a text editor
 
 ## Run
 
