@@ -21,14 +21,14 @@ except:
         import moviepy.editor as mp
 
 try:
-    from pydub import AudioSegment
+    from pydub import AudioSegment, silence
 except:
     try:
         os.system('pip3 install pydub')
-        from pydub import AudioSegment
+        from pydub import AudioSegment, silence
     except:
         os.system('pip install pydub')
-        from pydub import AudioSegment
+        from pydub import AudioSegment, silence
 
 try:
     import speech_recognition as sr
@@ -39,6 +39,7 @@ except:
     except:
         os.system('pip install SpeechRecognition')
         import speech_recognition as sr
+
 
 
 class Transcriber(Thread):
@@ -62,40 +63,38 @@ class Transcriber(Thread):
     def split_audio(self):
         # split audio file
         print('Splitting audio...')
-        silence_file = (self.audio_file_name.replace(
-            '.wav', '_silence.txt')).replace(' ','').strip()
+        #silence_file = (self.audio_file_name.replace(
+        #    '.wav', '_silence.txt')).replace(' ','').strip()
         # Create silence.txt file where are contained all the start and end seconds of all the silences
         # -30 is the dB silence threshold, 1 is the minimum silence duration
-        command = 'sh Scripts/ST.sh ' + self.audio_file_name + \
-            ' ' + SILECE_THRESHOLD + ' 1 ' + silence_file
-        os.system(command)
-
+        #command = 'sh Scripts/ST.sh ' + self.audio_file_name + \
+        #    ' ' + str(SILECE_THRESHOLD) + ' 1 ' + silence_file
+        #os.system(command)
+        
         # read all the silences times
-        silences = open(silence_file, 'r').readlines()
+        # silences = open(silence_file, 'r').readlines()
+        audio=AudioSegment.from_file(self.audio_file_name)
+        silences=silence.detect_silence(audio, min_silence_len=1000, silence_thresh=SILECE_THRESHOLD)
+
         audio_file = AudioSegment.from_mp3(self.audio_file_name)
-        last = 0
+        last=0
         tracks = []
 
         # extract all audio segments from audio source splitting where a silince was previously detected
-        for line in silences:
+        for start, end in silences:
             try:
-                end, duration = line.strip().split()
-                # calculate audio start and end
-                # library works in ms so it's all multiplied by 1000 to get seconds
-                to = (float(end) - float(duration)) * 1000
-                start = float(last) * 1000
-                clip_len = to - start
-                # if clip last less than 5 sec it doesn't split
-                if clip_len > 5 * 1000:
+                clip_len = end - last
+                # if clip last less than 5000 ms it doesn't split
+                if clip_len > 5000:
                     # extract an audio segment from the source and add 0.5 s of silence at start and at the end of the segment for better transcription
                     audio_segment = AudioSegment.silent(
-                        500) + audio_file[start:to] + AudioSegment.silent(500)
+                        500) + audio_file[last:end] + AudioSegment.silent(500)
                     tracks.append(audio_segment)
                     last = end
             except:
                 pass
         print('Done')
-        os.remove(silence_file)
+        #os.remove(silence_file)
         return tracks
 
     def extract_audio(self):
