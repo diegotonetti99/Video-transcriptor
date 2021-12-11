@@ -100,7 +100,7 @@ class Transcriber(Thread):
     def extract_audio(self):
         video = mp.VideoFileClip(self.video_name)
         print('Extracting audio...')
-        video.audio.write_audiofile(self.audio_file_name)
+        video.audio.write_audiofile(self.audio_file_name,bitrate='50k')
 
     def transcribe_tracks(self, tracks, text_file_name):
         # initialize the recogniser
