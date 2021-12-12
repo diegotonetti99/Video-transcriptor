@@ -9,41 +9,16 @@ LANGUAGE = config.language
 SILECE_THRESHOLD = config.silence_threshold
 
 
-# install missing libraries
-try:
-    import moviepy.editor as mp
-except:
-    try:
-        os.system('pip3 install moviepy')
-        import moviepy.editor as mp
-    except:
-        os.system('pip install moviepy')
-        import moviepy.editor as mp
+from moviepy.video.io.VideoFileClip import VideoFileClip
 
-try:
-    from pydub import AudioSegment, silence
-except:
-    try:
-        os.system('pip3 install pydub')
-        from pydub import AudioSegment, silence
-    except:
-        os.system('pip install pydub')
-        from pydub import AudioSegment, silence
+from pydub import AudioSegment, silence
 
-try:
-    import speech_recognition as sr
-except:
-    try:
-        os.system('pip3 install SpeechRecognition')
-        import speech_recognition as sr
-    except:
-        os.system('pip install SpeechRecognition')
-        import speech_recognition as sr
+import speech_recognition as sr
 
 
 
 class Transcriber(Thread):
-    def __init__(self, video_source, text_viewer, callback):
+    def __init__(self, video_source, text_viewer, callback, split_audio_completed):
         super(Transcriber, self).__init__()
 
         self.daemon = True
@@ -52,6 +27,7 @@ class Transcriber(Thread):
         self.text_file_name = ''
         self.loop = True
         self.callback = callback
+        self.split_audio_completed=split_audio_completed
         self.isEnded=False
 
     def run(self):
@@ -63,20 +39,8 @@ class Transcriber(Thread):
     def split_audio(self):
         # split audio file
         print('Splitting audio...')
-        #silence_file = (self.audio_file_name.replace(
-        #    '.wav', '_silence.txt')).replace(' ','').strip()
-        # Create silence.txt file where are contained all the start and end seconds of all the silences
-        # -30 is the dB silence threshold, 1 is the minimum silence duration
-        #command = 'sh Scripts/ST.sh ' + self.audio_file_name + \
-        #    ' ' + str(SILECE_THRESHOLD) + ' 1 ' + silence_file
-        #os.system(command)
-        
-        # read all the silences times
-        # silences = open(silence_file, 'r').readlines()
-        audio=AudioSegment.from_file(self.audio_file_name)
-        silences=silence.detect_silence(audio, min_silence_len=1000, silence_thresh=SILECE_THRESHOLD)
-
         audio_file = AudioSegment.from_mp3(self.audio_file_name)
+        silences=silence.detect_silence(audio_file, min_silence_len=1000, silence_thresh=SILECE_THRESHOLD)
         last=0
         tracks = []
 
@@ -98,7 +62,7 @@ class Transcriber(Thread):
         return tracks
 
     def extract_audio(self):
-        video = mp.VideoFileClip(self.video_name)
+        video = VideoFileClip(self.video_name)
         print('Extracting audio...')
         video.audio.write_audiofile(self.audio_file_name,bitrate='50k')
 
@@ -134,7 +98,7 @@ class Transcriber(Thread):
 
     def transcribe(self):
         """ Transcribe a video in a text file and return text file name """
-        self.audio_file_name = self.video_name.replace('.mp4', '.wav').replace(' ','').strip()
+        self.audio_file_name = self.video_name.replace('.mp4', '.mp3').replace(' ','').strip()
         # load mp4 ad extract wav track
         print('Loading video...')
         # create audio file id doesn't exists
@@ -147,6 +111,7 @@ class Transcriber(Thread):
         self.text_file_name = self.video_name.replace('.mp4', '.txt')
         print('Writing text to {}'.format(self.text_file_name))
         tracks = self.split_audio()
+        self.split_audio_completed(self)
         self.transcribe_tracks(tracks, self.text_file_name)
         os.remove(self.audio_file_name)
         # end transcription
