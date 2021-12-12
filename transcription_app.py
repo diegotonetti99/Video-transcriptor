@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QListWidgetItem
 
 from AppUI.main_page import Ui_MainWindow
 
@@ -27,23 +27,20 @@ class Application(QMainWindow, Ui_MainWindow):
 
     def select_files_clicked(self):
         dialog = QFileDialog()
-        dialog.setOptions(QFileDialog.DontUseNativeDialog)
+        #dialog.setOptions(QFileDialog.DontUseNativeDialog)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setNameFilter("Video files (*.mp4)")
         if dialog.exec():
             self.filenames = dialog.selectedFiles()
             self.files_list_widget.clear()
-            self.files_list_widget.addItems(self.filenames)
+            while len(self.filenames)>0:
+                file=self.filenames.pop()
+                widget=QListWidgetItem(file)
+                tr=Transcriber(file, self.text_viewer, self.task_completed, self.split_audio_completed, widget)
+                self.transcribers.append(tr)
+                self.files_list_widget.addItem(tr.widget)
 
     def start_transcription_clicked(self):
-        # do while there are files left
-        while len(self.filenames) > 0:
-            # if app hasn't started 4 threads yet create a new thread
-            file = self.filenames.pop()
-            self.text_viewer.setText('Transcripting ')
-            tr = Transcriber(file, self.text_viewer,
-                             self.task_completed, self.split_audio_completed)
-            self.transcribers.append(tr)
         if len(self.transcribers) > 0:
             tr = self.transcribers[0]
             tr.start()
@@ -52,7 +49,6 @@ class Application(QMainWindow, Ui_MainWindow):
     def task_completed(self, transcriber):
         """ method that happens when a transcription thread is terminated """
         print('task completed')
-        # transcriber.join()
 
         # start new transcription
         index = self.transcribers.index(transcriber)
@@ -63,6 +59,7 @@ class Application(QMainWindow, Ui_MainWindow):
                 self.queque.append(tr)
 
         self.queque.remove(transcriber)
+        self.files_list_widget.takeItem(self.files_list_widget.row(transcriber.widget))
         self.text_viewer.setText(
             'Transcriptions completed, queque length: '+str(len(self.queque)))
 

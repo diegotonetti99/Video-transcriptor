@@ -18,7 +18,7 @@ import speech_recognition as sr
 
 
 class Transcriber(Thread):
-    def __init__(self, video_source, text_viewer, callback, split_audio_completed):
+    def __init__(self, video_source, text_viewer, callback, split_audio_completed,widget):
         super(Transcriber, self).__init__()
 
         self.daemon = True
@@ -29,6 +29,7 @@ class Transcriber(Thread):
         self.callback = callback
         self.split_audio_completed=split_audio_completed
         self.isEnded=False
+        self.widget=widget
 
     def run(self):
         self.transcribe()
@@ -39,6 +40,7 @@ class Transcriber(Thread):
     def split_audio(self):
         # split audio file
         print('Splitting audio...')
+        self.text_viewer.setText('Splitting audio...')
         audio_file = AudioSegment.from_mp3(self.audio_file_name)
         silences=silence.detect_silence(audio_file, min_silence_len=1000, silence_thresh=SILECE_THRESHOLD)
         last=0
@@ -58,6 +60,7 @@ class Transcriber(Thread):
             except:
                 pass
         print('Done')
+        self.text_viewer.setText('Splitting audio completed')
         #os.remove(silence_file)
         return tracks
 
@@ -101,6 +104,7 @@ class Transcriber(Thread):
         self.audio_file_name = self.video_name.replace('.mp4', '.mp3').replace(' ','').strip()
         # load mp4 ad extract wav track
         print('Loading video...')
+        self.text_viewer.setText('Loading video...')
         # create audio file id doesn't exists
         # if not os.path.isfile(audio_file_name):
         #    open(audio_file_name, 'w')
