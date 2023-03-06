@@ -2,7 +2,7 @@
 
 ## Setup
 
-Make `transcription_app.py` file executabile typing in terminal 
+Make `transcription_app.py` file executable typing in terminal 
 ```shell
 chmod +x transcription_app.py
 ```
